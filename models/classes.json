@@ -1,0 +1,24 @@
+{
+  "classes": [
+    "Tomato___healthy",
+    "Tomato___Early_blight",
+    "Tomato___Late_blight",
+    "Tomato___Leaf_Mold",
+    "Tomato___Bacterial_spot",
+    "Potato___healthy",
+    "Potato___Early_blight",
+    "Potato___Late_blight",
+    "Corn___healthy",
+    "Corn___Common_rust",
+    "Corn___Northern_Leaf_Blight",
+    "Apple___healthy",
+    "Apple___Apple_scab",
+    "Apple___Cedar_apple_rust",
+    "Grape___healthy",
+    "Grape___Black_rot"
+  ],
+  "accuracy": 90.62,
+  "model_type": "RandomForestClassifier",
+  "features_dimension": 36,
+  "trained_classes_count": 16
+}

@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CropCare AI — Agricultural Decision Support & Plant Health</title>
+    <meta name="description" content="Production-quality agricultural decision-support application for Pakistani farmers. Real Scikit-Learn leaf disease detection, SQLite field persistence, Open-Meteo spray windows, and bilingual English & Urdu support.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+
+    <!-- Professional Typography: Outfit, Inter, and Noto Sans Arabic for authentic Urdu -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Production Agricultural Design System Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+
+        <!-- ================================================================= -->
+        <!-- Responsive Left Sidebar Navigation                                -->
+        <!-- ================================================================= -->
+        <aside class="app-sidebar" id="app-sidebar">
+            <!-- Sidebar Brand Header -->
+            <div class="sidebar-header">
+                <a href="/" class="sidebar-brand">
+                    <div class="brand-symbol">
+                        <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 20A7 7 0 0 1 4 13C4 8 8 4 13 4c5 0 7 4 7 7 0 5-4 9-9 9z"/>
+                            <path d="M11 20v-9"/>
+                        </svg>
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-title">CropCare AI</span>
+                        <span class="brand-subtitle">Pakistan Agronomy</span>
+                    </div>
+                </a>
+                <button type="button" class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close Navigation">
+                    <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Grouped Feature Navigation List -->
+            <nav class="sidebar-nav" role="tablist">
+                <div class="nav-section-label">MANAGEMENT</div>
+
+                <button class="nav-tab-btn active" data-tab="tab-dashboard" role="tab" id="nav-btn-dashboard">
+                    <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="9" rx="1"/>
+                        <rect x="14" y="3" width="7" height="5" rx="1"/>
+                        <rect x="14" y="12" width="7" height="9" rx="1"/>
+                        <rect x="3" y="16" width="7" height="5" rx="1"/>
+                    </svg>
+                    <span data-i18n="tab_dashboard">Overview</span>
+                </button>
+
+                <button class="nav-tab-btn" data-tab="tab-scanner" role="tab" id="nav-btn-scanner">
+                    <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 20A7 7 0 0 1 4 13C4 8 8 4 13 4c5 0 7 4 7 7 0 5-4 9-9 9z"/>
+                        <path d="M11 20v-9"/>
+                    </svg>
+                    <span data-i18n="tab_scanner">Crop Diagnosis</span>
+                </button>
+
+                <button class="nav-tab-btn" data-tab="tab-crops" role="tab" id="nav-btn-crops">
+                    <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <span data-i18n="tab_crops">My Fields</span>
+                    <span id="nav-crops-count" class="tab-badge">{{ crops|length }}</span>
+                </button>
+
+                <button class="nav-tab-btn" data-tab="tab-tasks" role="tab" id="nav-btn-tasks">
+                    <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span data-i18n="tab_tasks">Farm Calendar</span>
+                    <span id="nav-tasks-count" class="tab-badge">{{ pending_tasks|length }}</span>
+                </button>
+
+                <div class="nav-section-label">INTELLIGENCE</div>
+
+                <button class="nav-tab-btn" data-tab="tab-weather" role="tab" id="nav-btn-weather">
+                    <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+                    </svg>
+                    <span data-i18n="tab_weather">Weather & Irrigation</span>
+                </button>
+
+                <button class="nav-tab-btn" data-tab="tab-guides" role="tab" id="nav-btn-guides">
+                    <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                    <span data-i18n="tab_guides">Market & Knowledge</span>
+                </button>
+
+                <button class="nav-tab-btn" data-tab="tab-records" role="tab" id="nav-btn-records">
+                    <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span data-i18n="tab_records">Farm Records</span>
+                </button>
+            </nav>
+
+            <!-- Sidebar Footer Status -->
+            <div class="sidebar-footer">
+                <div class="sidebar-status-box">
+                    <div class="sidebar-status-indicator">
+                        <span class="status-pulse-dot"></span>
+                        <span id="sidebar-model-status">Local Engine Active</span>
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-subtle);">SQLite 3 &bull; Sub-50ms</div>
+                </div>
+                <button id="btn-sidebar-viva" class="btn-sidebar-help" type="button">
+                    <svg class="ag-icon ag-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span data-i18n="btn_viva_guide">Viva Defense Guide</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Backdrop for Mobile Navigation Drawer -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+        <!-- ================================================================= -->
+        <!-- Main Application Area                                             -->
+        <!-- ================================================================= -->
+        <main class="app-main">
+            <!-- Professional Compact Top Application Bar -->
+            <header class="app-topbar">
+                <div class="topbar-left">
+                    <button type="button" class="btn-hamburger" id="btn-hamburger" aria-label="Open Navigation Drawer">
+                        <svg class="ag-icon ag-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                    </button>
+                    <div class="topbar-view-info">
+                        <h1 class="topbar-view-title" id="topbar-page-title">Overview</h1>
+                        <span class="topbar-date-badge" id="topbar-current-date">Pakistan Agricultural Belt</span>
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <!-- Location Selector for Agricultural Districts in Pakistan -->
+                    <div class="topbar-location-wrap">
+                        <svg class="ag-icon ag-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <select id="district-select" aria-label="Select Farm District">
+                            <option value="Lahore" data-lat="31.5204" data-lon="74.3587" selected>Lahore (Punjab)</option>
+                            <option value="Multan" data-lat="30.1575" data-lon="71.5249">Multan (Cotton/Wheat)</option>
+                            <option value="Faisalabad" data-lat="31.4504" data-lon="73.1350">Faisalabad (Grain Belt)</option>
+                            <option value="Sahiwal" data-lat="30.6682" data-lon="73.1114">Sahiwal (Potato/Maize)</option>
+                            <option value="Sargodha" data-lat="32.0836" data-lon="72.6711">Sargodha (Citrus/Wheat)</option>
+                            <option value="Gujranwala" data-lat="32.1877" data-lon="74.1945">Gujranwala (Rice Belt)</option>
+                            <option value="Rahim Yar Khan" data-lat="28.4212" data-lon="70.2989">Rahim Yar Khan (Sugarcane)</option>
+                            <option value="Hyderabad" data-lat="25.3960" data-lon="68.3578">Hyderabad (Sindh)</option>
+                            <option value="Sukkur" data-lat="27.7052" data-lon="68.8574">Sukkur (Upper Sindh)</option>
+                            <option value="Peshawar" data-lat="34.0151" data-lon="71.5249">Peshawar (KPK)</option>
+                            <option value="Swat" data-lat="34.7717" data-lon="72.3602">Swat (Orchards/Fruits)</option>
+                            <option value="Quetta" data-lat="30.1798" data-lon="66.9750">Quetta (Balochistan)</option>
+                        </select>
+                    </div>
+
+                    <!-- AI Diagnostic Engine Status -->
+                    <div id="model-status-indicator" class="topbar-status-badge {% if model_loaded %}status-online{% else %}status-offline{% endif %}">
+                        <span class="status-dot"></span>
+                        <span id="model-status-text">
+                            {% if model_loaded %}AI Active (16 Classes){% else %}Model Offline{% endif %}
+                        </span>
+                    </div>
+
+                    <!-- Language Switcher (English / Urdu) -->
+                    <button id="btn-toggle-lang" class="btn-topbar-action" type="button" aria-label="Toggle Urdu or English Language">
+                        <svg class="ag-icon ag-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                        <span id="lang-btn-text">اردو میں دیکھیں</span>
+                    </button>
+
+                    <!-- Viva Guide Modal Trigger -->
+                    <button id="btn-open-viva-modal" class="btn-topbar-action btn-viva-top" type="button">
+                        <svg class="ag-icon ag-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                        <span data-i18n="btn_viva_guide">Viva Guide</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Workspace Main Content -->
+            <div class="workspace-content">
+
+                <!-- ============================================================= -->
+                <!-- TAB 1: Practical Agricultural Dashboard (Overview)            -->
+                <!-- ============================================================= -->
+                <section id="tab-dashboard" class="tab-panel active">
+                    <!-- 1. Compact Weather Overview Bar (4-Column White Tile Grid) -->
+                    <div class="weather-overview-grid">
+                        <div class="weather-tile">
+                            <div class="weather-tile-label" data-i18n="dash_weather_title">Today's Conditions</div>
+                            <div class="weather-tile-main">
+                                <span id="dash-temp" class="weather-tile-val">--°C</span>
+                                <span id="dash-weather-condition" class="weather-tile-sub">Connecting...</span>
+                            </div>
+                            <div id="dash-location-text" class="weather-tile-desc">Lahore • Real-time Open-Meteo</div>
+                        </div>
+
+                        <div class="weather-tile">
+                            <div class="weather-tile-label" data-i18n="w_wind_label">Wind Velocity</div>
+                            <div class="weather-tile-main">
+                                <span id="dash-wind" class="weather-tile-val">-- km/h</span>
+                                <span class="weather-tile-sub" style="font-size: 0.75rem; color: var(--text-muted);">Threshold: &lt;15 km/h</span>
+                            </div>
+                            <div class="weather-tile-desc">Chemical spray drift evaluation threshold</div>
+                        </div>
+
+                        <div class="weather-tile">
+                            <div class="weather-tile-label" data-i18n="w_hum_label">Humidity & Fungal Risk</div>
+                            <div class="weather-tile-main">
+                                <span id="dash-humidity" class="weather-tile-val">--%</span>
+                                <span id="dash-humidity-risk" class="weather-tile-sub" style="font-size: 0.75rem; color: var(--text-muted);">Monitoring...</span>
+                            </div>
+                            <div class="weather-tile-desc">Atmospheric spore germination susceptibility</div>
+                        </div>
+
+                        <div class="weather-tile">
+                            <div class="weather-tile-label" data-i18n="spray_window_label">Spray Safety Window</div>
+                            <div style="margin: 4px 0;">
+                                <span id="dash-spray-badge" class="status-pill status-pill-warning">Evaluating...</span>
+                            </div>
+                            <div id="dash-spray-advisory" class="weather-tile-desc" style="line-height: 1.35;">
+                                Analyzing wind velocity, precipitation, and temperature...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Weather Alert Container (Displayed if rain/frost/drift detected) -->
+                    <div id="dash-alert-container"></div>
+
+                    <!-- 2. Farmer Operational Quick Actions Bar -->
+                    <div class="quick-actions-bar">
+                        <span class="quick-actions-label">QUICK ACTIONS:</span>
+                        <button class="btn-primary" data-jump-tab="tab-scanner" type="button">
+                            <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 20A7 7 0 0 1 4 13C4 8 8 4 13 4c5 0 7 4 7 7 0 5-4 9-9 9z"/>
+                                <path d="M11 20v-9"/>
+                            </svg>
+                            <span>Diagnose Foliage</span>
+                        </button>
+                        <button class="btn-secondary" id="btn-open-add-crop" type="button">
+                            <span>+ Register Field</span>
+                        </button>
+                        <button class="btn-secondary" id="btn-open-add-task" type="button">
+                            <span>+ Create Farm Task</span>
+                        </button>
+                        <button class="btn-secondary" data-jump-tab="tab-weather" type="button">
+                            <span>Check Irrigation</span>
+                        </button>
+                    </div>
+
+                    <!-- 3. Practical Decision 2-Column Balanced Grid -->
+                    <div class="dashboard-decision-grid">
+                        <!-- Left Column: Active Crops Summary & Recent Scans -->
+                        <div class="dash-col-main">
+                            <!-- Active Crops & Fields Summary Card -->
+                            <div class="ag-card">
+                                <div class="ag-card-header">
+                                    <div class="ag-card-title">
+                                        <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                            <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+                                            <circle cx="12" cy="10" r="3"/>
+                                        </svg>
+                                        <span data-i18n="dash_crops_title">Active Farm Crops & Plots</span>
+                                    </div>
+                                    <button class="btn-secondary btn-sm" data-jump-tab="tab-crops" type="button">
+                                        <span>View All Fields</span>
+                                    </button>
+                                </div>
+
+                                <div id="dash-crops-container">
+                                    {% if crops and crops|length > 0 %}
+                                    <table class="crop-summary-table">
+                                        <tbody>
+                                            {% for c in crops %}
+                                            <tr>
+                                                <td class="crop-primary-cell">
+                                                    <span class="crop-name-strong">{{ c.crop_name }}</span>
+                                                    <span class="crop-field-sub">{{ c.field_name }} &bull; {{ c.variety or 'Standard Variety' }}</span>
+                                                </td>
+                                                <td><span class="status-pill status-pill-neutral">{{ c.area_acres }} Acres</span></td>
+                                                <td style="font-size: 0.76rem; color: var(--text-muted);">Sown: {{ c.sowing_date }}</td>
+                                                <td><span class="status-pill status-pill-healthy">{{ c.soil_type }} Soil</span></td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    {% else %}
+                                    <div style="padding: 24px 16px; text-align: center; color: var(--text-muted);">
+                                        <p style="font-size: 0.84rem; margin-bottom: 12px;" data-i18n="empty_crops_text">
+                                            No farm fields registered yet. Record your acreage to track sowing milestones.
+                                        </p>
+                                        <button class="btn-primary btn-sm" id="btn-empty-add-crop" type="button">
+                                            + <span data-i18n="btn_add_first_field">Register First Field</span>
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Recent Disease Scans Card -->
+                            <div class="ag-card">
+                                <div class="ag-card-header">
+                                    <div class="ag-card-title">
+                                        <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                        </svg>
+                                        <span>Recent Foliage Diagnoses</span>
+                                    </div>
+                                    <button class="btn-secondary btn-sm" data-jump-tab="tab-records" type="button">
+                                        <span>Full Scan Log</span>
+                                    </button>
+                                </div>
+
+                                <div id="dash-recent-scans-container" class="recent-scans-list">
+                                    {% if recent_scans and recent_scans|length > 0 %}
+                                        {% for s in recent_scans[:4] %}
+                                        <div class="recent-scan-row">
+                                            <div class="recent-scan-left">
+                                                <img src="/{{ s.filepath }}" class="recent-scan-thumb" alt="{{ s.disease_name }}" onerror="this.style.display='none'">
+                                                <div>
+                                                    <div style="font-weight: 600; color: var(--text-main); font-size: 0.82rem;">{{ s.disease_name }}</div>
+                                                    <div style="font-size: 0.74rem; color: var(--text-muted);">{{ s.crop }} &bull; {{ s.timestamp[:10] }}</div>
+                                                </div>
+                                            </div>
+                                            <span class="status-pill {% if s.status == 'Healthy' %}status-pill-healthy{% else %}status-pill-danger{% endif %}">
+                                                {{ s.confidence|round|int }}%
+                                            </span>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.8rem;">
+                                            No diagnostic scans recorded yet. Diagnose a leaf photo to build your field history.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Due Tasks Checklist & Compact 3D Visualizer -->
+                        <div class="dash-col-side">
+                            <!-- Due Farm Tasks Card -->
+                            <div class="ag-card">
+                                <div class="ag-card-header">
+                                    <div class="ag-card-title">
+                                        <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                            <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                            <line x1="16" y1="2" x2="16" y2="6"/>
+                                            <line x1="8" y1="2" x2="8" y2="6"/>
+                                            <line x1="3" y1="10" x2="21" y2="10"/>
+                                        </svg>
+                                        <span data-i18n="dash_tasks_title">Upcoming Farm Operations</span>
+                                    </div>
+                                    <button class="btn-secondary btn-sm" id="btn-open-add-task" type="button">
+                                        + <span data-i18n="btn_add_task">New Task</span>
+                                    </button>
+                                </div>
+
+                                <div id="dash-tasks-container">
+                                    {% if pending_tasks and pending_tasks|length > 0 %}
+                                    <div class="task-list">
+                                        {% for t in pending_tasks[:5] %}
+                                        <div class="task-item" data-task-id="{{ t.id }}">
+                                            <div class="task-left">
+                                                <input type="checkbox" class="task-checkbox" data-task-id="{{ t.id }}" aria-label="Mark task completed" onchange="toggleTask({{ t.id }})">
+                                                <div>
+                                                    <div class="task-title">{{ t.title }}</div>
+                                                    <div class="task-meta">Due: {{ t.due_date }} &bull; {{ t.crop_name }}</div>
+                                                </div>
+                                            </div>
+                                            <span class="task-badge">{{ t.task_type }}</span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <div style="padding: 24px 16px; text-align: center; color: var(--text-muted); font-size: 0.82rem;" data-i18n="empty_tasks_text">
+                                        No pending farm operations due today.
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Compact Botanical Specimen Reference Card -->
+                            <div class="ag-card" id="hero-3d-card">
+                                <div class="ag-card-header">
+                                    <div class="ag-card-title">
+                                        <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                            <path d="M11 20A7 7 0 0 1 4 13C4 8 8 4 13 4c5 0 7 4 7 7 0 5-4 9-9 9z"/>
+                                            <path d="M11 20v-9"/>
+                                        </svg>
+                                        <span>Botanical Specimen Reference</span>
+                                    </div>
+                                    <span style="font-size: 0.74rem; color: var(--text-muted);">Wheat (*Triticum*)</span>
+                                </div>
+
+                                <div class="specimen-card-wrapper">
+                                    <div id="hero-3d-canvas-container" class="specimen-canvas-container"></div>
+                                </div>
+
+                                <div class="specimen-controls-row">
+                                    <div style="display: flex; gap: 4px; align-items: center;">
+                                        <span style="font-weight: 600; color: var(--text-muted); font-size: 0.7rem;">STAGE:</span>
+                                        <button type="button" class="control-pill" id="btn-stage-tillering">Tillering</button>
+                                        <button type="button" class="control-pill active" id="btn-stage-heading">Heading</button>
+                                    </div>
+                                    <div style="display: flex; gap: 4px; align-items: center;">
+                                        <button type="button" class="control-pill active" data-wind-mode="gentle">Breeze</button>
+                                        <button type="button" class="btn-secondary btn-sm" id="btn-reset-hero-3d" style="padding: 2px 6px; font-size: 0.7rem;">↺</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================= -->
+                <!-- TAB 2: Foliage Diagnostic Chamber                             -->
+                <!-- ============================================================= -->
+                <section id="tab-scanner" class="tab-panel">
+                    <div class="scanner-workspace-grid">
+                        <!-- Left: Diagnostic Source Intake & Specimen -->
+                        <div>
+                            <div class="ag-card">
+                                <div class="ag-card-header">
+                                    <div class="ag-card-title">
+                                        <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                            <path d="M11 20A7 7 0 0 1 4 13C4 8 8 4 13 4c5 0 7 4 7 7 0 5-4 9-9 9z"/>
+                                            <path d="M11 20v-9"/>
+                                        </svg>
+                                        <span data-i18n="scanner_title">Plant Foliage Diagnostic Chamber</span>
+                                    </div>
+                                </div>
+
+                                <div class="ag-card-body">
+                                    <!-- Crop Type Hint Dropdown -->
+                                    <div class="form-group">
+                                        <label class="form-label" for="scan-crop-select" data-i18n="label_crop_hint">Select Plant Type (Optional):</label>
+                                        <select id="scan-crop-select" class="form-select">
+                                            <option value="auto">Auto-Detect Foliage (Tomato, Potato, Corn, Apple, Grape)</option>
+                                            <option value="Tomato">Tomato (ٹماٹر)</option>
+                                            <option value="Potato">Potato (آلو)</option>
+                                            <option value="Corn">Corn / Maize (مکئی)</option>
+                                            <option value="Apple">Apple (سیب)</option>
+                                            <option value="Grape">Grape (انگور)</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Dropzone -->
+                                    <div id="drop-zone" class="dropzone-area">
+                                        <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/bmp" style="display: none;">
+                                        <div id="upload-prompt">
+                                            <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                <polyline points="17 8 12 3 7 8"/>
+                                                <line x1="12" y1="3" x2="12" y2="15"/>
+                                            </svg>
+                                            <div class="dropzone-title" data-i18n="dropzone_title">Upload Leaf Photograph</div>
+                                            <div class="dropzone-desc" data-i18n="dropzone_desc">
+                                                Drag and drop foliar photo here, or browse files on your device (Max 16 MB).
+                                            </div>
+                                            <button id="btn-browse-file" class="btn-primary btn-sm" type="button">
+                                                <span data-i18n="btn_choose_image">Select Image</span>
+                                            </button>
+                                        </div>
+
+                                        <!-- Image Preview Box -->
+                                        <div id="preview-box" class="image-preview-box">
+                                            <img id="preview-image" src="" alt="Foliage Preview" class="preview-img">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                                                <div>
+                                                    <span id="preview-filename" style="font-weight: 600; font-size: 0.82rem;">leaf.jpg</span>
+                                                    <span id="preview-filesize" style="font-size: 0.74rem; color: var(--text-muted); margin-left: 6px;">0 KB</span>
+                                                </div>
+                                                <div style="display: flex; gap: 6px;">
+                                                    <button id="btn-run-scan" class="btn-primary btn-sm" type="button">
+                                                        <span data-i18n="btn_run_model">Run Local Model</span>
+                                                    </button>
+                                                    <button id="btn-reset-scan" class="btn-secondary btn-sm" type="button">
+                                                        <span data-i18n="btn_clear_photo">Clear</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Test Sample Leaves Tray for Viva / Presentations -->
+                                    <div class="sample-leaves-section">
+                                        <div class="sample-leaves-title" data-i18n="sample_tray_title">Or Test with Built-in Presentation Samples:</div>
+                                        <div class="sample-leaf-buttons">
+                                            {% for s in samples %}
+                                            <button type="button" class="btn-sample-chip" data-sample="{{ s.name }}">
+                                                <span>{{ s.label_en }}</span>
+                                            </button>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Processing Spinner -->
+                                    <div id="scan-loading-indicator" class="spinner-wrap" style="display: none;">
+                                        <div class="spinner"></div>
+                                        <div style="font-weight: 600; color: var(--primary-900); font-size: 0.86rem;" data-i18n="evaluating_text">
+                                            Analyzing Botanical Features Locally...
+                                        </div>
+                                        <div style="font-size: 0.74rem; color: var(--text-muted);" data-i18n="evaluating_sub">
+                                            Extracting 36 color moments, GLI foliar index, and lesion textures
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3D Specimen & Optical Scanner Stage -->
+                            <div class="ag-card" id="scanner-3d-card">
+                                <div class="ag-card-header">
+                                    <div class="ag-card-title">
+                                        <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <line x1="12" y1="8" x2="12" y2="12"/>
+                                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                        </svg>
+                                        <span>3D Botanical Specimen Visualizer</span>
+                                    </div>
+                                    <span style="font-size: 0.72rem; color: var(--text-muted);">Illustrative Reference</span>
+                                </div>
+                                <div class="specimen-card-wrapper" style="min-height: 220px;">
+                                    <div id="scanner-3d-canvas-container" style="width: 100%; height: 220px;"></div>
+                                </div>
+                                <div style="padding: 8px 12px; font-size: 0.72rem; color: var(--text-muted); background-color: var(--bg-subtle);">
+                                    ℹ️ <em>Optical laser sweeps during active classification. Symptoms map onto the 3D blade to illustrate identified pathology.</em>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Diagnostic Result Document Sheet -->
+                        <div>
+                            <div class="diagnostic-sheet" id="diagnostic-results-card">
+                                <div id="result-placeholder" class="sheet-placeholder">
+                                    <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="width: 44px; height: 44px; color: var(--border-dark); margin-bottom: 12px;">
+                                        <circle cx="11" cy="11" r="8"/>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                    </svg>
+                                    <h3 style="font-size: 1.05rem; font-weight: 600; color: var(--text-main); margin-bottom: 4px;" data-i18n="result_empty_title">
+                                        No Foliage Scanned Yet
+                                    </h3>
+                                    <p style="font-size: 0.8rem; max-width: 320px; margin: 0 auto; line-height: 1.45;" data-i18n="result_empty_desc">
+                                        Select a foliar photo or choose one of the built-in presentation sample leaves to generate an instant diagnosis.
+                                    </p>
+                                </div>
+
+                                <div id="result-active-content" style="display: none;">
+                                    <!-- Header Banner with Pathogen Taxonomy -->
+                                    <div class="sheet-header-banner">
+                                        <div>
+                                            <div id="res-crop" style="font-size: 0.75rem; font-weight: 600; color: var(--primary-700); text-transform: uppercase; letter-spacing: 0.05em;">Crop</div>
+                                            <h2 id="res-disease-name" class="sheet-disease-title">Disease Name</h2>
+                                            <div id="res-scientific" class="sheet-scientific">Pathogen Binomial</div>
+                                        </div>
+                                        <span id="res-status-badge" class="status-pill status-pill-danger" style="font-size: 0.8rem; padding: 4px 10px;">
+                                            Status
+                                        </span>
+                                    </div>
+
+                                    <!-- Model Confidence Bar -->
+                                    <div class="confidence-bar-container">
+                                        <div class="confidence-header">
+                                            <span data-i18n="conf_label">Model Diagnostic Confidence</span>
+                                            <span id="res-confidence-pct" style="color: var(--primary-900); font-size: 0.82rem;">0%</span>
+                                        </div>
+                                        <div class="confidence-track">
+                                            <div id="res-confidence-bar" class="confidence-fill" style="width: 0%;"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Biological Symptoms -->
+                                    <div class="diag-field-section">
+                                        <div class="diag-field-title">
+                                            <svg class="ag-icon ag-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="11" cy="11" r="8"/>
+                                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                            </svg>
+                                            <span data-i18n="diag_symptoms_title">Foliar Symptoms</span>
+                                        </div>
+                                        <p id="res-symptoms" class="diag-field-content"></p>
+                                    </div>
+
+                                    <!-- Agronomic & Cultural Prevention -->
+                                    <div class="diag-field-section">
+                                        <div class="diag-field-title">
+                                            <svg class="ag-icon ag-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                            </svg>
+                                            <span data-i18n="diag_prevention_title">Agronomic & Preventive Measures</span>
+                                        </div>
+                                        <ul id="res-prevention-list" class="diag-list"></ul>
+                                    </div>
+
+                                    <!-- Chemical Treatment -->
+                                    <div class="diag-field-section">
+                                        <div class="diag-field-title">
+                                            <svg class="ag-icon ag-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M10 2v7.31M14 9.3V1.99M8.5 2h7M14 9.3a6.5 6.5 0 1 1-4 0"/>
+                                            </svg>
+                                            <span data-i18n="diag_treatment_title">Targeted Treatment / Fungicide</span>
+                                        </div>
+                                        <p id="res-treatment" class="diag-field-content"></p>
+                                    </div>
+
+                                    <!-- Weather Vulnerability Advisory -->
+                                    <div class="diag-field-section" style="background-color: var(--bg-subtle);">
+                                        <div class="diag-field-title">
+                                            <svg class="ag-icon ag-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+                                            </svg>
+                                            <span data-i18n="diag_weather_title">Weather Susceptibility</span>
+                                        </div>
+                                        <p id="res-weather-note" class="diag-field-content" style="font-size: 0.78rem;"></p>
+                                    </div>
+
+                                    <!-- Action Buttons & Confirmation -->
+                                    <div style="padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; background-color: #FCFBF9;">
+                                        <span id="scan-saved-badge" style="font-size: 0.76rem; color: var(--status-green); font-weight: 600;">
+                                            ✓ Saved to Local SQLite
+                                        </span>
+                                        <button id="btn-print-report" class="btn-secondary btn-sm" type="button">
+                                            <svg class="ag-icon ag-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="6 9 6 2 18 2 18 9"/>
+                                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                                                <rect x="6" y="14" width="12" height="8"/>
+                                            </svg>
+                                            <span data-i18n="btn_print_report">Print Report</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Official Scientific Disclaimer -->
+                                    <div class="scientific-disclaimer" data-i18n="expert_disclaimer">
+                                        Disclaimer: CropCare AI runs a local machine-learning classifier for botanical decision support. Always cross-verify critical field infections with a local agricultural extension officer.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================= -->
+                <!-- TAB 3: My Fields & Managed Crops                              -->
+                <!-- ============================================================= -->
+                <section id="tab-crops" class="tab-panel">
+                    <!-- Interactive 3D Field Parcel -->
+                    <div class="ag-card" id="field-3d-card">
+                        <div class="ag-card-header">
+                            <div class="ag-card-title">
+                                <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                    <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+                                    <circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                <span data-i18n="field_3d_title">Interactive 3D Crop Field Parcel</span>
+                            </div>
+                            <span style="font-size: 0.74rem; color: var(--text-muted);">
+                                Mapped to SQLite Farm Database
+                            </span>
+                        </div>
+
+                        <div class="ag-card-body" style="padding-bottom: 0;">
+                            <p style="font-size: 0.8rem; color: var(--text-body); margin-bottom: 10px;" data-i18n="field_3d_desc">
+                                Virtual miniature plot mapped to your registered SQLite farm records. Click any row to inspect plot details.
+                            </p>
+                            <div class="specimen-card-wrapper" style="min-height: 260px;">
+                                <div id="field-3d-canvas-container" style="width: 100%; height: 260px;"></div>
+                                <div id="field-3d-tooltip"></div>
+                            </div>
+                        </div>
+
+                        <div style="padding: 8px 16px; display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); background-color: var(--bg-subtle);">
+                            <span>🌱 <em>Furrow Ridges & Irrigation Border</em></span>
+                            <span>Click any 3D crop row to highlight record in table below</span>
+                        </div>
+                    </div>
+
+                    <!-- Fields Data Table -->
+                    <div class="ag-card">
+                        <div class="ag-card-header">
+                            <div class="ag-card-title">
+                                <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <line x1="3" y1="9" x2="21" y2="9"/>
+                                    <line x1="9" y1="21" x2="9" y2="9"/>
+                                </svg>
+                                <span data-i18n="crops_page_title">Field & Crop Management</span>
+                            </div>
+                            <button class="btn-primary btn-sm" id="btn-table-add-crop" type="button">
+                                + <span data-i18n="btn_register_field">Register New Field</span>
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="ag-table" id="crops-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th data-i18n="th_crop">Crop Name</th>
+                                        <th data-i18n="th_field">Field Name</th>
+                                        <th data-i18n="th_area">Area (Acres)</th>
+                                        <th data-i18n="th_variety">Variety</th>
+                                        <th data-i18n="th_sowing">Sowing Date</th>
+                                        <th data-i18n="th_soil">Soil Texture</th>
+                                        <th data-i18n="th_actions">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="crops-table-body">
+                                    <!-- Populated dynamically via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================= -->
+                <!-- TAB 4: Farm Calendar & Tasks                                  -->
+                <!-- ============================================================= -->
+                <section id="tab-tasks" class="tab-panel">
+                    <div class="ag-card">
+                        <div class="ag-card-header">
+                            <div class="ag-card-title">
+                                <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                                <span data-i18n="tasks_page_title">Crop Calendar & Farm Operations</span>
+                            </div>
+
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button class="btn-secondary btn-sm filter-chip active" data-filter-status="all">All</button>
+                                <button class="btn-secondary btn-sm filter-chip" data-filter-status="pending">Pending</button>
+                                <button class="btn-secondary btn-sm filter-chip" data-filter-status="completed">Completed</button>
+                                <button class="btn-primary btn-sm" id="btn-table-add-task" type="button">
+                                    + <span data-i18n="btn_add_task">New Task</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="full-tasks-list" class="task-list">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================= -->
+                <!-- TAB 5: Weather & Irrigation                                   -->
+                <!-- ============================================================= -->
+                <section id="tab-weather" class="tab-panel">
+                    <div class="ag-card">
+                        <div class="ag-card-header">
+                            <div class="ag-card-title">
+                                <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                    <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+                                </svg>
+                                <span data-i18n="weather_page_title">Field Weather & Chemical Spray Window</span>
+                            </div>
+                        </div>
+
+                        <div class="ag-card-body">
+                            <!-- 4 Key Meteorological Parameters -->
+                            <div class="weather-overview-grid" style="margin-bottom: 16px;">
+                                <div class="weather-tile">
+                                    <div class="weather-tile-label" data-i18n="w_temp_label">Temperature</div>
+                                    <div class="weather-tile-val" id="w-full-temp">--°C</div>
+                                    <div id="w-full-feels" class="weather-tile-desc">Feels like --°C</div>
+                                </div>
+
+                                <div class="weather-tile">
+                                    <div class="weather-tile-label" data-i18n="w_hum_label">Relative Humidity</div>
+                                    <div class="weather-tile-val" id="w-full-hum">--%</div>
+                                    <div id="w-full-hum-note" class="weather-tile-desc">Atmospheric moisture</div>
+                                </div>
+
+                                <div class="weather-tile">
+                                    <div class="weather-tile-label" data-i18n="w_wind_label">Wind Velocity</div>
+                                    <div class="weather-tile-val" id="w-full-wind">-- km/h</div>
+                                    <div class="weather-tile-desc">Threshold: &lt;15 km/h for spraying</div>
+                                </div>
+
+                                <div class="weather-tile">
+                                    <div class="weather-tile-label" data-i18n="w_precip_label">Precipitation</div>
+                                    <div class="weather-tile-val" id="w-full-precip">0 mm</div>
+                                    <div class="weather-tile-desc">Hourly rain accumulation</div>
+                                </div>
+                            </div>
+
+                            <!-- Chemical Spray Suitability Card -->
+                            <div id="spray-evaluation-card" class="ag-alert ag-alert-success">
+                                <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                </svg>
+                                <div id="spray-evaluation-text">
+                                    Loading real-time spray safety analysis...
+                                </div>
+                            </div>
+
+                            <!-- 5-Day Forecast Grid -->
+                            <div style="margin-top: 18px;">
+                                <div class="diag-field-title" style="margin-bottom: 8px;">5-Day Agricultural Forecast</div>
+                                <div id="forecast-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
+                                    <!-- Populated dynamically via JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Practical Irrigation Scheduler -->
+                    <div class="ag-card">
+                        <div class="ag-card-header">
+                            <div class="ag-card-title">
+                                <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                                </svg>
+                                <span data-i18n="irri_calc_title">Practical Irrigation Scheduling Helper</span>
+                            </div>
+                        </div>
+
+                        <div class="ag-card-body">
+                            <form id="irri-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 16px;">
+                                <div>
+                                    <label class="form-label" for="irri-crop-type">Crop Type:</label>
+                                    <select id="irri-crop-type" class="form-select">
+                                        <option value="Wheat" selected>Wheat (گندم)</option>
+                                        <option value="Cotton">Cotton (کپاس)</option>
+                                        <option value="Rice">Rice (دھان/چاول)</option>
+                                        <option value="Corn">Corn / Maize (مکئی)</option>
+                                        <option value="Tomato">Tomato (ٹماٹر)</option>
+                                        <option value="Potato">Potato (آلو)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="form-label" for="irri-soil-type">Soil Texture:</label>
+                                    <select id="irri-soil-type" class="form-select">
+                                        <option value="Loam" selected>Loam (درمیانی میرا)</option>
+                                        <option value="Clay">Clay (چکنی مٹی)</option>
+                                        <option value="Sandy">Sandy (ریتلی میرا)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="form-label" for="irri-sowing-date">Sowing Date:</label>
+                                    <input type="date" id="irri-sowing-date" class="form-input">
+                                </div>
+
+                                <div style="display: flex; align-items: flex-end;">
+                                    <button type="submit" class="btn-primary" style="width: 100%;">
+                                        <span data-i18n="btn_calc_irri">Calculate Schedule</span>
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Results Box -->
+                            <div id="irri-result-box" style="display: none; background-color: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px;">
+                                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+                                    <div style="font-weight: 700; color: var(--primary-900); font-size: 0.95rem;">
+                                        Recommended Interval: <span id="irri-interval-days" style="color: var(--primary-700);">--</span> Days
+                                    </div>
+                                    <div style="font-size: 0.78rem; color: var(--text-muted);">
+                                        Estimated Next Watering: <strong id="irri-next-date">--</strong>
+                                    </div>
+                                </div>
+                                <div id="irri-rain-note" class="ag-alert ag-alert-warning" style="display: none; margin-bottom: 8px;"></div>
+                                <div style="font-size: 0.8rem; line-height: 1.5; color: var(--text-body);" id="irri-stages-text"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================= -->
+                <!-- TAB 6: Market & Agronomic Knowledge                           -->
+                <!-- ============================================================= -->
+                <section id="tab-guides" class="tab-panel">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <!-- Mandi Wholesale Benchmarks -->
+                        <div class="ag-card">
+                            <div class="ag-card-header">
+                                <div class="ag-card-title">
+                                    <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                        <line x1="12" y1="1" x2="12" y2="23"/>
+                                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                    </svg>
+                                    <span data-i18n="mandi_title">Wholesale Mandi Rates (AMIS Punjab)</span>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="ag-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Commodity</th>
+                                            <th>Market</th>
+                                            <th>Unit</th>
+                                            <th>Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="mandi-table-body">
+                                        <!-- Populated dynamically via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="mandi-disclaimer" style="padding: 10px 14px; font-size: 0.72rem; color: var(--text-muted); border-top: 1px solid var(--border-subtle);"></div>
+                        </div>
+
+                        <!-- Agronomic Field Practical Guides -->
+                        <div class="ag-card">
+                            <div class="ag-card-header">
+                                <div class="ag-card-title">
+                                    <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                                    </svg>
+                                    <span data-i18n="guides_title">Field Practical Agronomic Guides</span>
+                                </div>
+                            </div>
+
+                            <div class="ag-card-body" id="guides-accordion-container">
+                                <!-- Populated dynamically via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================= -->
+                <!-- TAB 7: Farm Records Archive                                   -->
+                <!-- ============================================================= -->
+                <section id="tab-records" class="tab-panel">
+                    <div class="ag-card">
+                        <div class="ag-card-header">
+                            <div class="ag-card-title">
+                                <svg class="ag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-700);">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                <span data-i18n="records_title">Saved Diagnostic Scan Archive (SQLite)</span>
+                            </div>
+                            <button id="btn-clear-history" class="btn-secondary btn-sm" type="button">
+                                <span data-i18n="btn_clear_history">Clear History</span>
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="ag-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th data-i18n="th_date">Date & Time</th>
+                                        <th data-i18n="th_crop">Host Plant</th>
+                                        <th data-i18n="th_diagnosis">Diagnosis</th>
+                                        <th data-i18n="th_conf">Confidence</th>
+                                        <th data-i18n="th_status">Status</th>
+                                        <th data-i18n="th_actions">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-table-body">
+                                    <!-- Populated dynamically via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- Modals                                                                -->
+    <!-- ===================================================================== -->
+
+    <!-- Modal 1: Register Field / Crop -->
+    <div id="modal-add-crop" class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title" data-i18n="modal_add_crop_title">Register New Field</h3>
+                <button type="button" class="btn-icon-danger" data-close-modal="modal-add-crop" aria-label="Close modal">✕</button>
+            </div>
+            <form id="form-add-crop">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="inp-crop-type" data-i18n="lbl_crop_name">Crop Type:</label>
+                        <select id="inp-crop-type" class="form-select" required>
+                            <option value="Wheat" selected>Wheat (گندم)</option>
+                            <option value="Cotton">Cotton (کپاس)</option>
+                            <option value="Rice">Rice (دھان/چاول)</option>
+                            <option value="Corn">Corn / Maize (مکئی)</option>
+                            <option value="Sugarcane">Sugarcane (کماد/گنا)</option>
+                            <option value="Potato">Potato (آلو)</option>
+                            <option value="Tomato">Tomato (ٹماٹر)</option>
+                            <option value="Other">Other Crop (دیگر)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="inp-crop-custom-wrap" style="display: none;">
+                        <label class="form-label" for="inp-crop-name">Custom Crop Name:</label>
+                        <input type="text" id="inp-crop-name" class="form-input" placeholder="e.g. Mustard / سرسوں">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="inp-field-name" data-i18n="lbl_field_name">Field Name / Identifier:</label>
+                        <input type="text" id="inp-field-name" class="form-input" placeholder="e.g. Canal North Plot" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="inp-field-area" data-i18n="lbl_area">Area (Acres):</label>
+                            <input type="number" id="inp-field-area" class="form-input" min="0.1" step="0.1" value="1.0" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="inp-crop-variety" data-i18n="lbl_variety">Certified Variety:</label>
+                            <input type="text" id="inp-crop-variety" class="form-input" placeholder="e.g. Akbar-2019">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="inp-sowing-date" data-i18n="lbl_sowing_date">Sowing Date:</label>
+                            <input type="date" id="inp-sowing-date" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="inp-soil-type" data-i18n="lbl_soil_type">Soil Texture:</label>
+                            <select id="inp-soil-type" class="form-select">
+                                <option value="Loam" selected>Loam (درمیانی میرا)</option>
+                                <option value="Clay">Clay (چکنی مٹی)</option>
+                                <option value="Sandy">Sandy (ریتلی)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="inp-field-notes" data-i18n="lbl_notes">Notes / Observations:</label>
+                        <textarea id="inp-field-notes" class="form-textarea" rows="2" placeholder="e.g. Tube-well irrigated, laser leveled"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-close-modal="modal-add-crop" data-i18n="btn_cancel">Cancel</button>
+                    <button type="submit" class="btn-primary" data-i18n="btn_save_field">Save Field</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: Add Farm Task -->
+    <div id="modal-add-task" class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title" data-i18n="modal_add_task_title">Add Farm Task</h3>
+                <button type="button" class="btn-icon-danger" data-close-modal="modal-add-task" aria-label="Close modal">✕</button>
+            </div>
+            <form id="form-add-task">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="inp-task-crop" data-i18n="lbl_task_crop">Associated Crop / Field:</label>
+                        <input type="text" id="inp-task-crop" class="form-input" placeholder="e.g. Wheat (Canal North)" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="inp-task-type" data-i18n="lbl_task_type">Operation Type:</label>
+                            <select id="inp-task-type" class="form-select">
+                                <option value="Irrigation">Irrigation (آبپاشی)</option>
+                                <option value="Fertilizer">Fertilizer (کھاد)</option>
+                                <option value="Weeding">Weeding (گڈی/جڑی بوٹی تلفی)</option>
+                                <option value="Spray">Pesticide Spray (اسپرے)</option>
+                                <option value="Scouting">Pest Scouting (معائنہ)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="inp-task-due" data-i18n="lbl_task_due">Due Date:</label>
+                            <input type="date" id="inp-task-due" class="form-input" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="inp-task-title" data-i18n="lbl_task_title">Task Description:</label>
+                        <input type="text" id="inp-task-title" class="form-input" placeholder="e.g. First Kor irrigation and Urea application" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-close-modal="modal-add-task" data-i18n="btn_cancel">Cancel</button>
+                    <button type="submit" class="btn-primary" data-i18n="btn_save_task">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 3: Viva Defense & Examiner Guide -->
+    <div id="modal-viva-guide" class="modal-backdrop">
+        <div class="modal-box modal-box-lg">
+            <div class="modal-header">
+                <h3 class="modal-title" data-i18n="viva_title">CropCare AI — University Viva & Architecture Guide</h3>
+                <button type="button" class="btn-icon-danger" data-close-modal="modal-viva-guide" aria-label="Close modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="accordion-item open">
+                    <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                        <span>1. Why Scikit-Learn (36 Quantitative Features) instead of a Deep Learning CNN?</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="accordion-body">
+                        Modern Python (3.14 on Windows) lacks precompiled TensorFlow binaries. Instead of fake predictions, CropCare AI implements an authentic computer vision pipeline using <strong>Pillow and Scikit-Learn</strong> that calculates 36 quantitative botanical features (RGB/HSV moments, Green Leaf Index, VARI, tissue chlorosis/necrosis ratios, and Sobel gradient textures). Inference executes locally in &lt;50 milliseconds without GPU requirements.
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                        <span>2. How is data structured and persisted?</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="accordion-body">
+                        We use SQLite 3 across three relational tables: <code>scans</code> (diagnostic history), <code>crops</code> (managed fields), and <code>farm_tasks</code> (crop calendar). 100% of queries use <code>?</code> parameterization to prevent SQL injection vulnerabilities, and foreign key cascading ensures deleting a crop automatically cleans up linked calendar tasks.
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                        <span>3. How does the biological leaf validation guard prevent false classifications?</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="accordion-body">
+                        Before classification, the model engine executes an automated botanical validation guard in <code>services/inference_service.py</code>. It inspects chlorophyll pixel dominance and vegetation color variance. Images lacking botanical foliage (e.g., cars, faces, blank surfaces) are rejected with an explanatory error message instead of hallucinating a diagnosis.
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                        <span>4. How is the Open-Meteo Weather API integrated safely?</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="accordion-body">
+                        Open-Meteo is an open-source, non-commercial meteorological service that does not require paid API keys. The Flask backend queries coordinates for Pakistan's agricultural districts with in-memory TTL caching (10 minutes) and computes a chemical spray safety window: wind speed must be below 15 km/h to prevent dangerous drift, precipitation must be 0 mm, and temperatures must be under 36°C.
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                        <span>5. Recommended 4-Minute Viva Demonstration Sequence</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="accordion-body">
+                        <ol style="padding-left: 20px; line-height: 1.8;">
+                            <li>Show the <strong>Overview Dashboard</strong> with real-time weather and spray conditions for Lahore or Multan.</li>
+                            <li>Click the <strong>Language Toggle ("اردو میں دیکھیں")</strong> to demonstrate complete Right-to-Left (RTL) localization for Pakistani farmers.</li>
+                            <li>Go to <strong>Crop Diagnosis</strong> and click "Tomato Early Blight" from the presentation sample tray. Show the 36-feature confidence meter, symptoms, and organic prevention advice.</li>
+                            <li>Navigate to <strong>Farm Records</strong> to verify the scan record was persisted in local SQLite.</li>
+                            <li>Open <strong>Weather & Irrigation</strong> and calculate water requirements for a 35-day-old wheat crop in loam soil.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-close-modal="modal-viva-guide" data-i18n="btn_close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts (Zero build step, 100% offline-ready) -->
+    <script src="{{ url_for('static', filename='js/vendor/three.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/three_scenes.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/translations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/weather.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
