@@ -42,6 +42,28 @@ def allowed_file(filename):
 # 1. System Health & Diagnostics
 # -------------------------------------------------------------
 
+@api_bp.route("", methods=["GET"])
+@api_bp.route("/", methods=["GET"])
+def api_index():
+    """Returns directory of available REST endpoints and dashboard link."""
+    return jsonify({
+        "status": "online",
+        "service": "CropCare AI REST API",
+        "version": config.APP_VERSION,
+        "dashboard_url": "/",
+        "endpoints": {
+            "health": "/api/health",
+            "stats": "/api/stats",
+            "model_status": "/api/model-status",
+            "scans": "/api/scans",
+            "crops": "/api/crops",
+            "tasks": "/api/tasks",
+            "weather": "/api/weather",
+            "mandi_rates": "/api/mandi-rates",
+            "knowledge_center": "/api/knowledge-center"
+        }
+    }), 200
+
 @api_bp.route("/health", methods=["GET"])
 def health_check():
     """

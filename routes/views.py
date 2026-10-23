@@ -10,6 +10,11 @@ from services.inference_service import inference_service
 views_bp = Blueprint("views", __name__)
 
 @views_bp.route("/")
+@views_bp.route("/index")
+@views_bp.route("/home")
+@views_bp.route("/dashboard")
+@views_bp.route("/api/index")
+@views_bp.route("/api/index.py")
 def index():
     """Renders the CropCare AI unified agricultural dashboard."""
     stats = db.get_stats()
