@@ -1,5 +1,11 @@
 # 🌿 CropCare AI — Agricultural Decision Support & Plant Health Platform
 
+[![CI](https://github.com/javedabubakar0-sketch/CropCare-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/javedabubakar0-sketch/CropCare-AI/actions)
+[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Framework-Flask%203.x-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjavedabubakar0-sketch%2FCropCare-AI&env=VERCEL_SUPPORT_LARGE_FUNCTIONS&envDescription=Enables%20large%20function%20support%20for%20scikit-learn%20and%20scipy&envLink=https%3A%2F%2Fvercel.com%2Fdocs%2Ffunctions%2Fconfiguring-functions%2Flarge-functions)
+
 > **A Secure, Reliable, Fully Functional Agricultural Decision Support System**  
 > Tailored for Pakistani farmers, field advisers, and university BSCS semester evaluations.  
 > Built with **Python Flask**, **Scikit-Learn**, **SQLite 3**, **Pillow/NumPy**, and **Open-Meteo**.  
