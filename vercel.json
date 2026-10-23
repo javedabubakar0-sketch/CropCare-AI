@@ -3,13 +3,13 @@
   "functions": {
     "api/index.py": {
       "maxDuration": 30,
-      "includeFiles": "{templates/**,models/**,cropcare.db,routes/**,services/**,*.py}"
+      "includeFiles": "{templates/**,public/**,static/**,models/**,cropcare.db,routes/**,services/**,*.py}"
     }
   },
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/api/index"
+      "destination": "/api/index?path=$1"
     }
   ]
 }
