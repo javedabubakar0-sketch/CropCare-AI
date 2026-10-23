@@ -45,3 +45,8 @@ static/uploads/*
 
 # Logs
 *.log
+
+.vercel
+
+_uv/
+.vercel/

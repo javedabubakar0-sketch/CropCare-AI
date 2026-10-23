@@ -3,15 +3,7 @@
   "functions": {
     "api/index.py": {
       "maxDuration": 30,
-      "includeFiles": [
-        "templates/**",
-        "static/**",
-        "models/**",
-        "cropcare.db",
-        "*.py",
-        "routes/**",
-        "services/**"
-      ]
+      "includeFiles": "{templates/**,models/**,cropcare.db,routes/**,services/**,*.py}"
     }
   },
   "rewrites": [
