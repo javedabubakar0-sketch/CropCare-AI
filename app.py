@@ -75,6 +75,21 @@ def create_app(test_config=None):
             return send_from_directory(fallback_dir, filename)
         return jsonify({"error": "File not found"}), 404
 
+    @app.route("/api/debug", methods=["GET", "POST"])
+    def debug_route():
+        from flask import request
+        return jsonify({
+            "PATH_INFO": request.environ.get("PATH_INFO"),
+            "QUERY_STRING": request.environ.get("QUERY_STRING"),
+            "RAW_URI": request.environ.get("RAW_URI"),
+            "REQUEST_URI": request.environ.get("REQUEST_URI"),
+            "HTTP_X_MATCHED_PATH": request.environ.get("HTTP_X_MATCHED_PATH"),
+            "HTTP_X_FORWARDED_URI": request.environ.get("HTTP_X_FORWARDED_URI"),
+            "url": request.url,
+            "path": request.path,
+            "method": request.method
+        })
+
     # ---------------------------------------------------------
     # Global Error Handlers (Security & Clean REST Contracts)
     # ---------------------------------------------------------

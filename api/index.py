@@ -17,27 +17,35 @@ from app import app as flask_app
 class VercelWSGIHandler:
     """
     WSGI wrapper to ensure Vercel rewrites map accurately to Flask's router.
-    Resolves both query-parameterized rewrites (?path=...) and internal prefixes.
+    Resolves query-parameterized rewrites (?path=...), Vercel headers, and prefixes.
     """
     def __init__(self, wsgi_app):
         self.wsgi_app = wsgi_app
 
     def __call__(self, environ, start_response):
+        orig_path = None
         query_string = environ.get("QUERY_STRING", "")
         params = urllib.parse.parse_qs(query_string)
 
-        # 1. If Vercel rewrote the route and passed the original path via query
+        # 1. Check if Vercel passed the original path in the rewrite query string
         if "path" in params and params["path"]:
             orig_path = params["path"][0]
+            clean_params = {k: v for k, v in params.items() if k != "path"}
+            environ["QUERY_STRING"] = urllib.parse.urlencode(clean_params, doseq=True)
+
+        # 2. Check standard Vercel request path headers
+        elif environ.get("HTTP_X_MATCHED_PATH"):
+            orig_path = environ.get("HTTP_X_MATCHED_PATH")
+        elif environ.get("HTTP_X_FORWARDED_URI"):
+            orig_path = environ.get("HTTP_X_FORWARDED_URI").split("?")[0]
+
+        # 3. Apply the resolved path if found
+        if orig_path:
             if not orig_path.startswith("/"):
                 orig_path = "/" + orig_path
             environ["PATH_INFO"] = orig_path
-
-            # Clean 'path' parameter from query string so request.args stays pristine
-            clean_params = {k: v for k, v in params.items() if k != "path"}
-            environ["QUERY_STRING"] = urllib.parse.urlencode(clean_params, doseq=True)
         else:
-            # 2. Fallback prefix stripping for direct serverless function calls
+            # Fallback: strip internal function file prefixes
             path = environ.get("PATH_INFO", "")
             for prefix in ("/api/index.py", "/api/index"):
                 if path == prefix:

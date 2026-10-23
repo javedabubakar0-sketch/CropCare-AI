@@ -50,3 +50,4 @@ static/uploads/*
 
 _uv/
 .vercel/
+.env*
